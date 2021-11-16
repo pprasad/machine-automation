@@ -7,4 +7,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface SchedulerJobRepository extends MongoRepository<SchedulerJob,String> {
    List<SchedulerJob> findByStatus(String status);
+   List<SchedulerJob> findByStatusIn(List<String> status);
 }

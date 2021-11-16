@@ -3,6 +3,7 @@ package org.automation.serviceImpl;
 import static org.automation.util.AutomationConstant.TRIGGER_TYPE_ALARM;
 import static org.automation.util.AutomationConstant.TRIGGER_TYPE_OPERATE;
 import static org.automation.util.AutomationConstant.SCHEDULER_STATUS;
+import static org.automation.util.AutomationConstant.converTime;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -10,8 +11,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.automation.dao.L1PoolRepository;
+import org.automation.dao.ProductResultHistoryActiveRepository;
+import org.automation.dao.ProductResultHistoryRepository;
 import org.automation.dao.SchedulerJobRepository;
 import org.automation.model.L1PoolEntity;
+import org.automation.model.ProductResultHistory;
+import org.automation.model.ProductResultHistoryActive;
 import org.automation.model.SchedulerJob;
 import org.automation.service.AutomationService;
 import org.slf4j.Logger;
@@ -32,6 +37,12 @@ public class AutomationServiceImpl implements AutomationService{
 	
 	@Autowired
 	private SchedulerJobRepository schedulerJobRepo;
+	
+	@Autowired
+	private ProductResultHistoryActiveRepository prodResultHistActRepo;
+	
+	@Autowired
+	private ProductResultHistoryRepository prodResultHistoryRepo;
 	
 	@Override
 	public void findAllAlarmMachines() {
@@ -54,7 +65,8 @@ public class AutomationServiceImpl implements AutomationService{
 					    	 SchedulerJob schedulerJob=new SchedulerJob();
 					    	 schedulerJob.setId(poolEntity.getId());
 					    	 schedulerJob.setName(poolEntity.getName());
-					    	 schedulerJob.setRestartTime(poolEntity.getEndDate().getTime()-poolEntity.getStartDate().getTime());
+					    	 Long timeDiff=poolEntity.getEndDate().getTime()-poolEntity.getStartDate().getTime();
+					    	 schedulerJob.setRestartTime(converTime(timeDiff));
 					    	 schedulerJob.setStartDate(LocalDate.now());
 					    	 schedulerJob.setStatus(SCHEDULER_STATUS.IN_PROGRESS.toString());
 					    	 schedulerJobRepo.save(schedulerJob);
@@ -74,6 +86,30 @@ public class AutomationServiceImpl implements AutomationService{
 
 	@Override
 	public boolean updateScheduler(List<SchedulerJob> schedulerJobs) {
-		return false;
+		boolean flag=false;
+		try {
+			if(schedulerJobs!=null && !schedulerJobs.isEmpty()) {
+			  schedulerJobRepo.saveAll(schedulerJobs);
+			  flag=true;
+			}
+		}catch(Exception ex) {
+			LOGGER.error("Exception Occer while saving updatescheduler records",ex);
+		}
+		return flag;
+	}
+
+	@Override
+	public Optional<ProductResultHistoryActive> getActiveProductByL1Name(String name) {
+		return prodResultHistActRepo.findByName(name);
+	}
+
+	@Override
+	public List<ProductResultHistory> getProductHistroyByNameAndProductResult(String name, Long prodResult) {
+		return prodResultHistoryRepo.findWithProdcutResult(name,prodResult);
+	}
+
+	@Override
+	public List<SchedulerJob> getAllSchedulersByStatus(List<String> status) {
+		return schedulerJobRepo.findByStatusIn(status);
 	}
 }

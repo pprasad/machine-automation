@@ -1,8 +1,10 @@
 package org.automation.service;
 
 import java.util.List;
+import java.util.Optional;
 
-import org.automation.model.L1PoolEntity;
+import org.automation.model.ProductResultHistory;
+import org.automation.model.ProductResultHistoryActive;
 import org.automation.model.SchedulerJob;
 /*
  * @Auth prasad
@@ -14,5 +16,11 @@ public interface AutomationService {
 	 
 	 List<SchedulerJob> getAllSchedulersByStatus(String status);
 	 
+	 List<SchedulerJob> getAllSchedulersByStatus(List<String> status);
+	 
 	 boolean updateScheduler(List<SchedulerJob> schedulerJobs);
+	 
+	 Optional<ProductResultHistoryActive> getActiveProductByL1Name(String name);
+	 
+	 List<ProductResultHistory> getProductHistroyByNameAndProductResult(String name,Long prodResult);
 }

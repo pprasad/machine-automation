@@ -2,7 +2,6 @@ package org.automation.serviceImpl;
 
 import static org.automation.util.AutomationConstant.TRIGGER_TYPE_ALARM;
 import static org.automation.util.AutomationConstant.TRIGGER_TYPE_OPERATE;
-import static org.automation.util.AutomationConstant.SCHEDULER_STATUS;
 import static org.automation.util.AutomationConstant.converTime;
 
 import java.time.LocalDate;
@@ -13,12 +12,13 @@ import java.util.Optional;
 import org.automation.dao.L1PoolRepository;
 import org.automation.dao.ProductResultHistoryActiveRepository;
 import org.automation.dao.ProductResultHistoryRepository;
-import org.automation.dao.SchedulerJobRepository;
+import org.automation.dao.SchedulerJobRepo;
 import org.automation.model.L1PoolEntity;
 import org.automation.model.ProductResultHistory;
 import org.automation.model.ProductResultHistoryActive;
-import org.automation.model.SchedulerJob;
+import org.automation.model.SchedulerJobEntity;
 import org.automation.service.AutomationService;
+import org.automation.util.AutomationConstant.SCHEDULER_STATUS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,7 @@ public class AutomationServiceImpl implements AutomationService{
 	private L1PoolRepository poolRepository;
 	
 	@Autowired
-	private SchedulerJobRepository schedulerJobRepo;
+	private SchedulerJobRepo schedulerJobRepo;
 	
 	@Autowired
 	private ProductResultHistoryActiveRepository prodResultHistActRepo;
@@ -58,11 +58,11 @@ public class AutomationServiceImpl implements AutomationService{
 						L1PoolEntity poolEntity=filterData.get();
 						LOGGER.info("L1Name:{}",poolEntity.getName());
 						LOGGER.info("TriggerType:{}",poolEntity.getValue());
-						Optional<SchedulerJob> schedulerJobOpt=schedulerJobRepo.findById(poolEntity.getId());
+						Optional<SchedulerJobEntity> schedulerJobOpt=schedulerJobRepo.findById(poolEntity.getId());
 						/*it will insert machine name in scheduler table for future scheduler identify either machine is active or non-active 
 						if machine not exist*/
 					    if(!schedulerJobOpt.isPresent()){
-					    	 SchedulerJob schedulerJob=new SchedulerJob();
+					    	 SchedulerJobEntity schedulerJob=new SchedulerJobEntity();
 					    	 schedulerJob.setId(poolEntity.getId());
 					    	 schedulerJob.setName(poolEntity.getName());
 					    	 Long timeDiff=poolEntity.getEndDate().getTime()-poolEntity.getStartDate().getTime();
@@ -80,12 +80,12 @@ public class AutomationServiceImpl implements AutomationService{
 	}
 
 	@Override
-	public List<SchedulerJob> getAllSchedulersByStatus(String status) {
+	public List<SchedulerJobEntity> getAllSchedulersByStatus(String status) {
 		return schedulerJobRepo.findByStatus(status);
 	}
 
 	@Override
-	public boolean updateScheduler(List<SchedulerJob> schedulerJobs) {
+	public boolean updateScheduler(List<SchedulerJobEntity> schedulerJobs) {
 		boolean flag=false;
 		try {
 			if(schedulerJobs!=null && !schedulerJobs.isEmpty()) {
@@ -109,7 +109,12 @@ public class AutomationServiceImpl implements AutomationService{
 	}
 
 	@Override
-	public List<SchedulerJob> getAllSchedulersByStatus(List<String> status) {
+	public List<SchedulerJobEntity> getAllSchedulersByStatus(List<String> status) {
 		return schedulerJobRepo.findByStatusIn(status);
+	}
+
+	@Override
+	public List<SchedulerJobEntity> findAllSchedulers() {
+		return schedulerJobRepo.findAll();
 	}
 }

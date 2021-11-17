@@ -1,8 +1,7 @@
 package org.automation.scheduler;
 
-import static org.automation.util.AutomationConstant.converTime;
 import static org.automation.util.AutomationConstant.isEmpty;
-
+import static org.automation.util.AutomationConstant.converTime;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,7 +10,7 @@ import java.util.Optional;
 
 import org.automation.model.ProductResultHistory;
 import org.automation.model.ProductResultHistoryActive;
-import org.automation.model.SchedulerJob;
+import org.automation.model.SchedulerJobEntity;
 import org.automation.service.AutomationService;
 import org.automation.util.AutomationConstant.SCHEDULER_STATUS;
 import org.automation.util.AutomationConstant.SortByDate;
@@ -53,7 +52,7 @@ public class JobMonitorScheduler {
 	public void findActiveMachines(){
 		LOGGER.info("*****Started Finding Active Machines Scheduler*****");
 		try{
-			List<SchedulerJob> schedulerJobs=automationService.getAllSchedulersByStatus(Arrays.asList(SCHEDULER_STATUS.IN_PROGRESS.toString(),SCHEDULER_STATUS.FAILURE.toString()));
+			List<SchedulerJobEntity> schedulerJobs=automationService.getAllSchedulersByStatus(Arrays.asList(SCHEDULER_STATUS.IN_PROGRESS.toString(),SCHEDULER_STATUS.FAILURE.toString()));
 			if(schedulerJobs!=null && !schedulerJobs.isEmpty()) {
 				schedulerJobs.forEach(e->{
 					e.setStatus(SCHEDULER_STATUS.STARTED.toString());

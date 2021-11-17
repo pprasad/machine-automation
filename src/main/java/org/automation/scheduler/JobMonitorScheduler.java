@@ -2,6 +2,8 @@ package org.automation.scheduler;
 
 import static org.automation.util.AutomationConstant.isEmpty;
 import static org.automation.util.AutomationConstant.converTime;
+import static org.automation.util.AutomationConstant.ERROR_RECORD_NOTFOUND;
+import static org.automation.util.AutomationConstant.ERROR_WEAKUP_STATUS;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,7 +68,7 @@ public class JobMonitorScheduler {
 						    List<ProductResultHistory> productResultHistories=automationService.
 						    		getProductHistroyByNameAndProductResult(prodResultOpt.get().getName(),0l);
 						    LOGGER.info("ProductResultHistory is Empty:{}",isEmpty(productResultHistories)?productResultHistories.isEmpty():true);
-						    if(productResultHistories!=null && !productResultHistories.isEmpty()) {
+						    if(productResultHistories!=null && !productResultHistories.isEmpty()){
 						    	Collections.sort(productResultHistories,new SortByDate());
 						    	ProductResultHistory productResultHistory=productResultHistories.get(0);
 						    	LOGGER.info("ProductName:{}",productResultHistory.getName());
@@ -74,12 +76,15 @@ public class JobMonitorScheduler {
 						    	e.setActiveTime(converTime(timeDiff));
 						    	e.setEndDate(LocalDate.now());
 						    	e.setStatus(SCHEDULER_STATUS.SUCCESS.toString());
+						    	e.setErrorMsg(null);
 						    }else {
 						    	e.setStatus(SCHEDULER_STATUS.FAILURE.toString());
+						    	e.setErrorMsg(ERROR_WEAKUP_STATUS);
 						    }
 						   automationService.updateScheduler(Arrays.asList(e));
 					   }else{
 						   e.setStatus(SCHEDULER_STATUS.FAILURE.toString());
+						   e.setErrorMsg(ERROR_RECORD_NOTFOUND);
 						   automationService.updateScheduler(Arrays.asList(e));
 					   }
 				   });

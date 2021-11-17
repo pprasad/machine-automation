@@ -10,9 +10,14 @@ public final class AutomationConstant{
 	
     public static String TRIGGER_TYPE_OPERATE="OPERATE";
     
+    public static String ERROR_RECORD_NOTFOUND="Active Record Not Found On ProductResultHistoryActive";
+    
+    public static String ERROR_WEAKUP_STATUS="Machine Still In Weakup Status";
+    
     public enum  SCHEDULER_STATUS{
     	IN_PROGRESS,STARTED,FAILURE,SUCCESS
     }
+    
     
     public static boolean isEmpty(Object obj){
        return obj!=null?true:false;

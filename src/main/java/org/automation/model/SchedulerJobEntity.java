@@ -35,4 +35,7 @@ public class SchedulerJobEntity {
 
 	@Column(name = "SCHEDULER_ENDDATE")
 	private LocalDate endDate;
+	
+	@Column(name="ERROR_MSG")
+	private String errorMsg;
 }

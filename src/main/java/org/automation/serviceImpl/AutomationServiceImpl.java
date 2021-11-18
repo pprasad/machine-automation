@@ -63,6 +63,9 @@ public class AutomationServiceImpl implements AutomationService{
 	@Autowired
 	private SchedulerConfigRepository schedulerConfigRepo;
 	
+	/*
+	 *@desc it will insert default schedulerconfiguration settings if config not available on scheduler_config collection
+	 */
 	@PostConstruct
 	public void intit() {
 		try{
@@ -78,6 +81,11 @@ public class AutomationServiceImpl implements AutomationService{
 			LOGGER.error("Unable to insert Scheduler Config:{}",ex);
 		}
 	}
+	/*
+	 * (non-Javadoc)
+	 * @see org.automation.service.AutomationService#findAllAlarmMachines()
+	 * @desc it will pull alarm status records from L1Pool Collection
+	 */
 	@Override
 	public void findAllAlarmMachines() {
 		try {
@@ -110,12 +118,22 @@ public class AutomationServiceImpl implements AutomationService{
 			LOGGER.error("Exception Occer under finding Alarm Machines",ex);
 		}
 	}
-
+    /*
+     * (non-Javadoc)
+     * @see org.automation.service.AutomationService#getAllSchedulersByStatus(java.lang.String)
+     * @param status
+     */
 	@Override
 	public List<SchedulerJob> getAllSchedulersByStatus(String status) {
 		return schedulerJobRepo.findByStatus(status);
 	}
-
+    /*
+     * (non-Javadoc)
+     * @see org.automation.service.AutomationService#updateScheduler(java.util.List)
+     * @param schuedulerList
+     * @desc it will SaveOrUpdate scheduler information on scheduler_job
+     */
+	
 	@Override
 	public boolean updateScheduler(List<SchedulerJob> schedulerJobs) {
 		boolean flag=false;
@@ -132,27 +150,48 @@ public class AutomationServiceImpl implements AutomationService{
 		LOGGER.info("*****Completed updateScheduler********");
 		return flag;
 	}
-
+    /*
+     * (non-Javadoc)
+     * @see org.automation.service.AutomationService#getActiveProductByL1Name(java.lang.String)
+     * @prama name
+     */
 	@Override
 	public Optional<ProductResultHistoryActive> getActiveProductByL1Name(String name) {
 		return prodResultHistActRepo.findByName(name);
 	}
-
+    /*
+     * (non-Javadoc)
+     * @see org.automation.service.AutomationService#getProductHistroyByNameAndProductResult(java.lang.String, java.lang.Long)
+     * @param name
+     * @param ProdResult
+     */
 	@Override
 	public List<ProductResultHistory> getProductHistroyByNameAndProductResult(String name, Long prodResult) {
 		return prodResultHistoryRepo.findWithProdcutResult(name,prodResult);
 	}
-
+    /*
+     * (non-Javadoc)
+     * @see org.automation.service.AutomationService#getAllSchedulersByStatus(java.util.List)
+     * @param status(Inprogress/Started/Success/Failure)
+     */
 	@Override
 	public List<SchedulerJob> getAllSchedulersByStatus(List<String> status) {
 		return schedulerJobRepo.findByStatusIn(status);
 	}
-
+    /*
+     * (non-Javadoc)
+     * @see org.automation.service.AutomationService#findAllSchedulers()
+     */
 	@Override
 	public List<SchedulerJob> findAllSchedulers() {
 		return schedulerJobRepo.findAll();
 	}
-
+    /*
+     * (non-Javadoc)
+     * @see org.automation.service.AutomationService#findAlarmHistoryByEndDateLessThanEqualAndTypeNotContain(java.util.Date, java.lang.String)
+     * @param date
+     * @param type 
+     */
 	@Override
 	public List<AlarmHistory> findAlarmHistoryByEndDateLessThanEqualAndTypeNotContain(Date date, String type) {
 		Date startDate=null;
@@ -166,11 +205,22 @@ public class AutomationServiceImpl implements AutomationService{
 			return alarmHistoryRepo.findByEndDateLessThanEqualAndTypeNotContain(date,type);
 		}
 	}
-
+    /*
+     * (non-Javadoc)
+     * @see org.automation.service.AutomationService#getSchedulerById(java.lang.String)
+     * @param id
+     */
 	@Override
 	public Optional<SchedulerJob> getSchedulerById(String id) {
 		 return schedulerJobRepo.findById(id);
 	}
+	/*
+	 * (non-Javadoc)
+	 * @see org.automation.service.AutomationService#findProdHistoryWithProdcutResultAndStartDateGe(java.lang.String, java.lang.Long, java.util.Date)
+	 * @param name Machine Name
+	 * @param ProdResult is great then zero
+	 * @param startDate Alarm enddate as a paramenter
+	 */
 	@Override
 	public List<ProductResultHistory> findProdHistoryWithProdcutResultAndStartDateGe(String name, Long prodResult,
 			Date startDate) {

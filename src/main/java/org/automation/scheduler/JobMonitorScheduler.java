@@ -41,7 +41,9 @@ public class JobMonitorScheduler {
   
 	@Autowired
 	private AutomationService automationService;
-	
+	/*
+	 * @desc it will update failure status if records in started status after re-start scheduler 
+	 */
 	@PostConstruct
 	public void init() {
 		LOGGER.info("****Started PostConstruct*****");
@@ -115,6 +117,7 @@ public class JobMonitorScheduler {
 					   Optional<ProductResultHistoryActive> prodResultOpt=automationService.getActiveProductByL1Name(e.getName());
 					   if(prodResultOpt.isPresent()){
 						    LOGGER.info("Product Name:{}",prodResultOpt.get().getName());
+						    //it will fetch great then alarm enddate with start date records on productresult history collection for given machine name
 						    List<ProductResultHistory> productResultHistories=automationService.
 						    		findProdHistoryWithProdcutResultAndStartDateGe(prodResultOpt.get().getName(),0l,e.getEndDate());
 						    LOGGER.info("ProductResultHistory is Empty:{}",!isEmpty(productResultHistories)?productResultHistories.isEmpty():ERROR_OBJECT_EMPTY);

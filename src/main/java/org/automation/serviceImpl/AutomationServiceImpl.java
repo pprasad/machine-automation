@@ -171,4 +171,9 @@ public class AutomationServiceImpl implements AutomationService{
 	public Optional<SchedulerJob> getSchedulerById(String id) {
 		 return schedulerJobRepo.findById(id);
 	}
+	@Override
+	public List<ProductResultHistory> findProdHistoryWithProdcutResultAndStartDateGe(String name, Long prodResult,
+			Date startDate) {
+		return prodResultHistoryRepo.findWithProdcutResultAndStartDateGe(name,prodResult,startDate);
+	}
 }

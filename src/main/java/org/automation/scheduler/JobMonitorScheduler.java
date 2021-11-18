@@ -82,10 +82,6 @@ public class JobMonitorScheduler {
 					schedulerJob.setEndDate(e.getEndDate());
 					schedulerJob.setSchedulerStartDate(LocalDate.now());
 					schedulerJob.setSchedulerEndDate(null);
-					schedulerJob.setStartTime(convertDateTotime(e.getStartDate()));
-					schedulerJob.setEndTime(convertDateTotime(e.getEndDate()));
-					long diff=e.getEndDate().getTime()-e.getStartDate().getTime();
-					schedulerJob.setRestartTime(converTime(diff));
 					schedulerJob.setStatus(SCHEDULER_STATUS.IN_PROGRESS.toString());
 					schedulerJobs.add(schedulerJob);
 				}
@@ -120,14 +116,13 @@ public class JobMonitorScheduler {
 					   if(prodResultOpt.isPresent()){
 						    LOGGER.info("Product Name:{}",prodResultOpt.get().getName());
 						    List<ProductResultHistory> productResultHistories=automationService.
-						    		getProductHistroyByNameAndProductResult(prodResultOpt.get().getName(),0l);
+						    		findProdHistoryWithProdcutResultAndStartDateGe(prodResultOpt.get().getName(),0l,e.getEndDate());
 						    LOGGER.info("ProductResultHistory is Empty:{}",!isEmpty(productResultHistories)?productResultHistories.isEmpty():ERROR_OBJECT_EMPTY);
 						    if(productResultHistories!=null && !productResultHistories.isEmpty()){
 						    	Collections.sort(productResultHistories,new SortByDate());
 						    	ProductResultHistory productResultHistory=productResultHistories.get(0);
-						    	LOGGER.info("ProductName:{}",productResultHistory.getName());
-						    	Long timeDiff=productResultHistory.getEndDate().getTime()-productResultHistory.getStartDate().getTime();
-						    	e.setProdStartTime(converTime(timeDiff));
+						    	LOGGER.info("ProductName:{} & ProductStartDate:{}",productResultHistory.getName(),productResultHistory.getStartDate());
+						    	e.setProdStartDate(productResultHistory.getStartDate());
 						    	e.setSchedulerEndDate(LocalDate.now());
 						    	e.setStatus(SCHEDULER_STATUS.SUCCESS.toString());
 						    	e.setErrorMsg(null);

@@ -26,7 +26,7 @@ public final class AutomationConstant{
     
     public static final String JOB_SCHDEULER_ID="JOB_SCHEDULER";
    
-    private static final SimpleDateFormat TIME_FORMAT=new SimpleDateFormat("hh:mm");
+    private static final SimpleDateFormat TIME_FORMAT=new SimpleDateFormat("HH:mm:ss");
     
     
     public enum  SCHEDULER_STATUS{

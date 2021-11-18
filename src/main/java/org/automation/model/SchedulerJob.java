@@ -25,23 +25,24 @@ public class SchedulerJob {
 	@Field(name="alarm_name")
 	private String alarmName;
 	
-	@Field(name="start_time")
+	/**Not required**/
+	/*@Field(name="start_time")
 	private String startTime;
 	
 	@Field(name="end_time")
 	private String endTime;
 	
 	@Field(name="restart_time")
-	private String restartTime;
-	
-	@Field(name="prod_start_time")
-	private String prodStartTime;
+	private String restartTime;*/
 	
 	@Field(name="start_date")
 	private Date startDate;
 	
 	@Field(name="end_date")
 	private Date endDate;
+	
+	@Field(name="prod_start_date")
+	private Date prodStartDate;
 	
 	@Field(name="scheduler_startdate")
 	private LocalDate schedulerStartDate;

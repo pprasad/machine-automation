@@ -27,6 +27,8 @@ public interface AutomationService {
 	 
 	 List<ProductResultHistory> getProductHistroyByNameAndProductResult(String name,Long prodResult);
 	 
+	 List<ProductResultHistory> findProdHistoryWithProdcutResultAndStartDateGe(String name,Long prodResult,Date startDate);
+	 
 	 List<SchedulerJob> findAllSchedulers();
 	 
 	 List<AlarmHistory> findAlarmHistoryByEndDateLessThanEqualAndTypeNotContain(Date date,String type);

@@ -21,5 +21,5 @@ java -jar machine-automation.jar -DSpring.config.location=application.properties
 ```
 - Run below command without interaction mode & run in background
 ```shell
-javaw -jar machine-automation.jar -DSpring.config.location=application.properties
+javaw -Dspring.config.location=application.properties -jar machine-automation.jar 
 ```

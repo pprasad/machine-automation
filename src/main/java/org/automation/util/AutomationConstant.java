@@ -67,7 +67,7 @@ public final class AutomationConstant{
     	Date startDate=null;
     	Calendar calendar=Calendar.getInstance();
     	calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
-    	if(schedulerConfig.getJobType().equals(JOB_SCHEDULER_TIME.D)) {
+    	if(schedulerConfig.getJobType().equals(JOB_SCHEDULER_TIME.D.toString())) {
     		calendar.add(Calendar.DATE,-schedulerConfig.getJobDay());
     	}else if(schedulerConfig.getJobType().equals(JOB_SCHEDULER_TIME.M.toString())) {
     		calendar.add(Calendar.MONTH,-schedulerConfig.getJobDay());

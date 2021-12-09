@@ -6,23 +6,27 @@ import static org.automation.util.AutomationConstant.TRIGGER_TYPE_OPR;
 import static org.automation.util.AutomationConstant.isEmpty;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
 import org.automation.model.AlarmHistory;
-import org.automation.model.AlarmHistoryStatus;
 import org.automation.model.ProductResultHistory;
 import org.automation.model.ProductResultHistoryActive;
 import org.automation.model.SchedulerJob;
 import org.automation.service.AutomationService;
-import org.automation.util.AutomationConstant.AlarmHistorySortByDate;
 import org.automation.util.AutomationConstant.SCHEDULER_STATUS;
 import org.automation.util.AutomationConstant.SortByDate;
+import org.automation.util.AutomationConstant.AlarmHistorySortByDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,17 +37,17 @@ import org.springframework.stereotype.Component;
  * @Date  15,Nov 2021
  * @Desc  Monitoring Critial & Re-Active Machines
  */
-@Component
-public class JobMonitorScheduler {
+//@Component
+public class JobMonitorScheduler_bk {
 	
-	private static final  Logger LOGGER=LoggerFactory.getLogger(JobMonitorScheduler.class);
+	private static final  Logger LOGGER=LoggerFactory.getLogger(JobMonitorScheduler_bk.class);
   
 	@Autowired
 	private AutomationService automationService;
 	/*
 	 * @desc it will update failure status if records in started status after re-start scheduler 
 	 */
-	@PostConstruct
+	//@PostConstruct
 	public void init() {
 		LOGGER.info("****Started PostConstruct*****");
 		try{
@@ -65,9 +69,10 @@ public class JobMonitorScheduler {
 	 * findAlarmMachine method pull alarm trigger machine information from L1Pool collection to scheduler
 	 * 
 	 * */
-	@Scheduled(fixedDelay=5000)
+	//@Scheduled(fixedDelay=5000)
 	public void findAlarmMachines() {
-		  LOGGER.info("*****Started Finding Alarm Machines Scheduler*****");
+		LOGGER.info("*****Started Finding Alarm Machines Scheduler*****");
+		  final List<SchedulerJob> schedulerJobs=new ArrayList<>();
 		  try{
 				 List<AlarmHistory> alarmHistories=automationService.findAlarmHistoryByEndDateLessThanEqualAndTypeNotContain(new Date(),TRIGGER_TYPE_OPR);
 				 Collections.sort(alarmHistories,new AlarmHistorySortByDate());
@@ -77,9 +82,17 @@ public class JobMonitorScheduler {
 								Optional<SchedulerJob> schedulerJobOpt=automationService.findByNameAndAlarmNameAndStatusInAndProdStartDateIsNull(e.getLineNo(),e.getMessage()
 											,Arrays.asList(SCHEDULER_STATUS.IN_PROGRESS.toString(),SCHEDULER_STATUS.FAILURE.toString(),SCHEDULER_STATUS.STARTED.toString()));
 								LOGGER.info("Scheduler is Exist:{}",schedulerJobOpt.isPresent());
-								SchedulerJob saveObj;
 								if(!schedulerJobOpt.isPresent()){
-									  saveAlarmHistoryStatus(preparedSchedulerJob(e),null);
+									 List<SchedulerJob> filterObjs=schedulerJobs.stream().filter(k->k.getName().equals(e.getLineNo()) && k.getAlarmName().equals(e.getMessage())
+											 && e.getStartDate().after(k.getEndDate()))
+									 .collect(Collectors.toList());
+									 if(filterObjs!=null && !filterObjs.isEmpty()) {
+										 SchedulerJob filterObj=filterObjs.get(0);
+										 filterObj.setEndDate(e.getStartDate());
+										 schedulerJobs.add(filterObj);
+									 }else{
+									     schedulerJobs.add(preparedSchedulerJob(e));
+									 }
 								}else{
 									/*
 									 * line no + alarm combination machine already exsit with status in progress,failure & started and 
@@ -87,21 +100,20 @@ public class JobMonitorScheduler {
 									 */
 				 					Optional<ProductResultHistoryActive> prodResultOpt=automationService.getActiveProductByL1Name(e.getLineNo());
 				 					SchedulerJob schedulerJob=schedulerJobOpt.get();
-				 					LOGGER.info("Existing Object Start Date:{} & End Date:{}",schedulerJob.getStartDate(),schedulerJob.getEndDate());
-				 					LOGGER.info("New Object stared Date:{}  & End Date:{}",e.getStartDate(),e.getStartDate());
-				 					LOGGER.info("stared Date is after enddate:{}",e.getStartDate().after(schedulerJob.getEndDate()));
-				 					LOGGER.info("stared Date & enddate is same:{}",e.getStartDate().equals(schedulerJob.getStartDate()));
-									if((!prodResultOpt.isPresent() && (e.getStartDate().after(schedulerJob.getEndDate())||
-											e.getStartDate().equals(schedulerJob.getStartDate())))
-											|| (prodResultOpt.isPresent() && (e.getStartDate().after(schedulerJob.getEndDate())||
-													e.getStartDate().equals(schedulerJob.getStartDate()))&& schedulerJob.getProdStartDate()==null)){
+									if((!prodResultOpt.isPresent() && e.getStartDate().after(schedulerJob.getEndDate()))
+											|| (prodResultOpt.isPresent() && e.getStartDate().after(schedulerJob.getEndDate()) && schedulerJob.getProdStartDate()==null)){
 										schedulerJob.setEndDate(e.getStartDate());
-										saveAlarmHistoryStatus(preparedSchedulerJob(e),schedulerJob);
+										schedulerJobs.add(schedulerJob);
 									}else{
-										saveAlarmHistoryStatus(preparedSchedulerJob(e),null);
+										schedulerJobs.add(preparedSchedulerJob(e));
 									}
 								}
 					      });
+							LOGGER.info("*******Saving Data on Scheduler********");
+							LOGGER.info("Scheduler Job List:{}",schedulerJobs.isEmpty());
+							boolean flag=automationService.updateScheduler(schedulerJobs);
+							LOGGER.info("Scheduler Information Saved:{}",flag);
+							schedulerJobs.clear();
 				}
 		 }catch(Exception ex) {
 			 LOGGER.error("Unable to Process FindAlarmMachines",ex);
@@ -114,7 +126,7 @@ public class JobMonitorScheduler {
 	 * productresult_history collections
 	 * 
 	 * */
-	@Scheduled(fixedDelay=10000)
+	//@Scheduled(fixedDelay=10000)
 	public void findActiveMachines(){
 		LOGGER.info("*****Started Finding Active Machines Scheduler*****");
 		try{
@@ -174,16 +186,5 @@ public class JobMonitorScheduler {
 		 schedulerJob.setSchedulerEndDate(null);
 		 schedulerJob.setStatus(SCHEDULER_STATUS.IN_PROGRESS.toString());
 		 return schedulerJob;
-	}
-	private void saveAlarmHistoryStatus(final SchedulerJob newSchedulerJob,final SchedulerJob existSchedulerJob){
-		if(!automationService.findById(newSchedulerJob.getId()).isPresent()){
-			 SchedulerJob schedulerJob=automationService.saveOrUpdateScheduler(existSchedulerJob==null?newSchedulerJob:existSchedulerJob);
-			 if(schedulerJob!=null){
-		        AlarmHistoryStatus alarmHistoryStatus=new AlarmHistoryStatus();
-		        alarmHistoryStatus.setId(newSchedulerJob.getId());
-		        alarmHistoryStatus.setSchedulerFlag(1);
-		        automationService.saveOrUpdateAlarmHistoryStatus(alarmHistoryStatus);
-			 }
-		}
 	}
 }

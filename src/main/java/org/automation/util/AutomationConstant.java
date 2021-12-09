@@ -1,12 +1,12 @@
 package org.automation.util;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.automation.model.AlarmHistory;
 import org.automation.model.ProductResultHistory;
 import org.automation.model.SchedulerConfig;
 
@@ -50,6 +50,14 @@ public final class AutomationConstant{
     public static class SortByDate implements Comparator<ProductResultHistory>{
 		@Override
 		public int compare(ProductResultHistory o1, ProductResultHistory o2) {
+			return o1.getEndDate().compareTo(o2.getEndDate());
+		}
+		
+    }
+    
+    public static class AlarmHistorySortByDate implements Comparator<AlarmHistory>{
+		@Override
+		public int compare(AlarmHistory o1, AlarmHistory o2) {
 			return o1.getEndDate().compareTo(o2.getEndDate());
 		}
 		

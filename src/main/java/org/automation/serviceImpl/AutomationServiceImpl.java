@@ -18,12 +18,14 @@ import java.util.Optional;
 import javax.annotation.PostConstruct;
 
 import org.automation.dao.AlarmHistoryRepository;
+import org.automation.dao.AlarmHistoryStatusRepository;
 import org.automation.dao.L1PoolRepository;
 import org.automation.dao.ProductResultHistoryActiveRepository;
 import org.automation.dao.ProductResultHistoryRepository;
 import org.automation.dao.SchedulerConfigRepository;
 import org.automation.dao.SchedulerJobRepository;
 import org.automation.model.AlarmHistory;
+import org.automation.model.AlarmHistoryStatus;
 import org.automation.model.L1PoolEntity;
 import org.automation.model.ProductResultHistory;
 import org.automation.model.ProductResultHistoryActive;
@@ -63,6 +65,9 @@ public class AutomationServiceImpl implements AutomationService{
 	@Autowired
 	private SchedulerConfigRepository schedulerConfigRepo;
 	
+	@Autowired
+	private AlarmHistoryStatusRepository alarmHistStatusRepo;
+	
 	/*
 	 *@desc it will insert default schedulerconfiguration settings if config not available on scheduler_config collection
 	 */
@@ -75,6 +80,11 @@ public class AutomationServiceImpl implements AutomationService{
 				 schedulerConfig.setId(JOB_SCHDEULER_ID);
 				 schedulerConfig.setJobDay(1);
 				 schedulerConfig.setJobType(JOB_SCHEDULER_TIME.M.toString());
+				 schedulerConfigRepo.save(schedulerConfig);
+			}else{
+				 SchedulerConfig schedulerConfig=schedulerConfigs.get();
+				 schedulerConfig.setJobDay(1);
+				 schedulerConfig.setJobType(JOB_SCHEDULER_TIME.D.toString());
 				 schedulerConfigRepo.save(schedulerConfig);
 			}
 		}catch(Exception ex) {
@@ -225,5 +235,56 @@ public class AutomationServiceImpl implements AutomationService{
 	public List<ProductResultHistory> findProdHistoryWithProdcutResultAndStartDateGe(String name, Long prodResult,
 			Date startDate) {
 		return prodResultHistoryRepo.findWithProdcutResultAndStartDateGe(name,prodResult,startDate);
+	}
+	/*
+	 * (non-Javadoc)
+	 * @see org.automation.service.AutomationService#findByNameAndAlarmName(java.lang.String, java.lang.String)
+	 * @param name machine lineno or machine name
+	 * @param alarmName machine alarmName
+	 */
+	@Override
+	public Optional<SchedulerJob> findByNameAndAlarmNameAndStatusIn(String name,String alarmName,List<String> status){
+		return schedulerJobRepo.findByNameAndAlarmNameAndStatusIn(name,alarmName,status);
+	}
+	/*
+	 * (non-Javadoc)
+	 * @see org.automation.service.AutomationService#findByNameAndAlarmNameAndStatusInAndProdStartDateIsNull(java.lang.String, java.lang.String, java.util.List)
+	 * @param name L1name
+	 * @param alarmname 
+	 * @status INprogress,Started,Failure & Success
+	 */
+	@Override
+	public Optional<SchedulerJob> findByNameAndAlarmNameAndStatusInAndProdStartDateIsNull(String name, String alarmName,
+			List<String> status) {
+		return schedulerJobRepo.findByNameAndAlarmNameAndStatusInAndProdStartDateIsNull(name,alarmName,status);
+	}
+	/*
+	 * (non-Javadoc)
+	 * @see org.automation.service.AutomationService#findByNameAndAlarmNameWithStatusAndEndDateProductStartDateIsNull(java.lang.String, java.lang.String, java.util.Date, java.util.List)
+	 * @param name L1Name
+	 * @param alarmname
+	 * @param date EndDate
+	 * @status INprogress,Started,Failure & Success
+	 */
+	@Override
+	public Optional<SchedulerJob> findByNameAndAlarmNameWithStatusAndEndDateProductStartDateIsNull(String name,
+			String alarmName, Date date, List<String> status) {
+		Date startDate=(Date)date.clone();
+		startDate.setHours(date.getHours()-5);
+		LOGGER.info("Start Date:{} & End Date:{}",startDate,date);
+		return schedulerJobRepo.findByNameAndAlarmNameWithStatusAndEndDateProductStartDateIsNull(name, alarmName,startDate,date,status);
+	}
+	@Override
+	public SchedulerJob saveOrUpdateScheduler(SchedulerJob schedulerJob) {
+		LOGGER.info("*******SaveOrUpdateScheduler********");
+		return schedulerJobRepo.save(schedulerJob);
+	}
+	@Override
+	public Optional<AlarmHistoryStatus> findById(String id) {
+		return alarmHistStatusRepo.findById(id);
+	}
+	@Override
+	public AlarmHistoryStatus saveOrUpdateAlarmHistoryStatus(AlarmHistoryStatus alarmHistoryStatus) {
+		return alarmHistStatusRepo.save(alarmHistoryStatus);
 	}
 }

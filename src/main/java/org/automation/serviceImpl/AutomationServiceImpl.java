@@ -226,4 +226,9 @@ public class AutomationServiceImpl implements AutomationService{
 			Date startDate) {
 		return prodResultHistoryRepo.findWithProdcutResultAndStartDateGe(name,prodResult,startDate);
 	}
+	@Override
+	public List<SchedulerJob> findByNameAndAlarmNameAndProdStartDateAndStatus(String name, String alarmName,
+			Date prodStarDate, String status) {
+		return schedulerJobRepo.findByNameAndAlarmNameAndProdStartDateAndStatus(name, alarmName, prodStarDate, status);
+	}
 }

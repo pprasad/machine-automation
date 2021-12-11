@@ -13,4 +13,5 @@ public interface SchedulerJobRepository extends MongoRepository<SchedulerJob,Str
    List<SchedulerJob> findByStatusIn(List<String> status);
    @Aggregation(pipeline= {"{$group:{_id:null,minDate:{$max:'$startdate'}}}"})
    Optional<Date> findMaxDate();
+   List<SchedulerJob> findByNameAndAlarmNameAndProdStartDateAndStatus(String name,String alarmName,Date prodStarDate,String status);
 }

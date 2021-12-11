@@ -34,4 +34,6 @@ public interface AutomationService {
 	 List<AlarmHistory> findAlarmHistoryByEndDateLessThanEqualAndTypeNotContain(Date date,String type);
 	 
 	 Optional<SchedulerJob> getSchedulerById(String id);
+	 
+	 List<SchedulerJob> findByNameAndAlarmNameAndProdStartDateAndStatus(String name,String alarmName,Date prodStarDate,String status);
 }

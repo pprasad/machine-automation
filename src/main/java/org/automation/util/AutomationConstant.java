@@ -1,14 +1,18 @@
 package org.automation.util;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Map;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.automation.model.ProductResultHistory;
 import org.automation.model.SchedulerConfig;
+import org.automation.model.SchedulerJob;
 
 public final class AutomationConstant{
   
@@ -80,5 +84,17 @@ public final class AutomationConstant{
     	}
     	startDate=calendar.getTime();
     	return startDate;
+    }
+    
+    public static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
+		Map<Object, Boolean> uniqueMap = new ConcurrentHashMap<>();
+		return t -> uniqueMap.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+	}
+    
+    public static class SchedulerSortByDate implements Comparator<SchedulerJob>{
+		@Override
+		public int compare(SchedulerJob o1, SchedulerJob o2) {
+			return o1.getEndDate().compareTo(o2.getEndDate());
+		}
     }
 }

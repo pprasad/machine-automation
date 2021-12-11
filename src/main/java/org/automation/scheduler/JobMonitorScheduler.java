@@ -6,6 +6,8 @@ import static org.automation.util.AutomationConstant.TRIGGER_TYPE_OPR;
 import static org.automation.util.AutomationConstant.converTime;
 import static org.automation.util.AutomationConstant.convertDateTotime;
 import static org.automation.util.AutomationConstant.isEmpty;
+import static org.automation.util.AutomationConstant.distinctByKey;
+import static org.automation.util.AutomationConstant.SchedulerSortByDate;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -14,6 +16,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -29,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
 /*
  * @Auth  Prasad
  * @Date  15,Nov 2021
@@ -147,5 +152,37 @@ public class JobMonitorScheduler {
 			LOGGER.error("unable to process ActiveMachines:{}",ex);
 		}
 		LOGGER.info("*****Completed Finding Active Machines Scheduler*****");
+	}
+	/*
+	 * this scheduler update duplicate records with end date as a ProdStartDate
+	 */
+	@Scheduled(fixedDelay=10000)
+	public void duplicateScheduler(){
+		try{
+			List<SchedulerJob> schedulerJobs=automationService.getAllSchedulersByStatus(Arrays.asList(SCHEDULER_STATUS.SUCCESS.toString()));
+			if(schedulerJobs!=null && !schedulerJobs.isEmpty()){
+				List<SchedulerJob> filterSchedulers=schedulerJobs.stream().filter(distinctByKey(e->e.getProdStartDate()))
+						.collect(Collectors.toList());
+				LOGGER.info("Filter scheduler:{}",filterSchedulers.isEmpty());
+				if(filterSchedulers!=null && !filterSchedulers.isEmpty()) {
+					 filterSchedulers.forEach(e->{
+					  if(e.getName().equalsIgnoreCase("SFL1-TUR1") && e.getAlarmName().equalsIgnoreCase("ROW2 INDIVIDUALIZER1 ACTUATION")){
+						 LOGGER.info("Machine :{} && Alarm:{} && ProdStartDate:{}",e.getName(),e.getAlarmName(),e.getProdStartDate());
+						 List<SchedulerJob> existSchedulerJobs=automationService.
+								 findByNameAndAlarmNameAndProdStartDateAndStatus(e.getName(),e.getAlarmName(),e.getProdStartDate(),SCHEDULER_STATUS.SUCCESS.toString());
+					     LOGGER.info("Duplicate Schedulers is Empty:{} && Size:{}",existSchedulerJobs.isEmpty(),existSchedulerJobs.size());
+						 if(existSchedulerJobs!=null && !existSchedulerJobs.isEmpty() && existSchedulerJobs.size()>1) {
+					    	 Collections.sort(existSchedulerJobs,new SchedulerSortByDate());
+					    	 existSchedulerJobs.subList(0,existSchedulerJobs.size()-1).forEach(k->{
+					    		 k.setProdStartDate(k.getEndDate());
+					    		 automationService.updateScheduler(Arrays.asList(k));
+					    	 });
+					     }
+					 }});
+				}
+			}
+		}catch(Exception ex){
+			LOGGER.error("Unable to process Duplicat records:{}",ex);
+		}
 	}
 }

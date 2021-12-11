@@ -54,6 +54,7 @@
 		</dependency>
 	</dependencies>
 	<build>
+	    <finalName>${project.artifactId}-V3.2</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
